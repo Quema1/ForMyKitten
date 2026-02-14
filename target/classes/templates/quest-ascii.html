@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Heart - Developer's Heart</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/heart-puzzle.css}">
+    <style>
+        .quest-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quest-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .quest-title {
+            color: #d63384;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .quest-description {
+            color: #666;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-indicator span {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            max-width: 400px;
+            margin: 0 auto 1.5rem;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 15px;
+        }
+
+        .pixel-cell {
+            aspect-ratio: 1;
+            background: #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #bbb;
+        }
+
+        .pixel-cell:hover:not(.painted):not(.wrong) {
+            background: #ffcdd2;
+            transform: scale(1.08);
+        }
+
+        .pixel-cell.painted {
+            background: #e91e63;
+            border-color: #c2185b;
+            box-shadow: 0 0 6px rgba(233, 30, 99, 0.5);
+            animation: paintPop 0.3s ease-out;
+            cursor: default;
+        }
+
+        .pixel-cell.wrong {
+            animation: wrongShake 0.4s ease-out forwards;
+            cursor: default;
+        }
+
+        @keyframes paintPop {
+            0% { transform: scale(0.6); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes wrongShake {
+            0% { transform: translateX(0); background: #ef5350; }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); opacity: 0.5; }
+            100% { transform: translateX(0); opacity: 0; visibility: hidden; }
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.85rem; color: #666; margin-bottom: 0.2rem; }
+        .stat-value { font-size: 1.3rem; color: #d63384; font-weight: bold; }
+
+        .hint {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            border-left: 4px solid #1976d2;
+            text-align: center;
+        }
+
+        .success-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-overlay.show { display: flex; }
+
+        .success-content {
+            text-align: center;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .photo-reveal {
+            max-width: 500px;
+            width: 90%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            margin-bottom: 1.5rem;
+        }
+
+        .success-text {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.6);
+        }
+
+        @media (max-width: 500px) {
+            .pixel-grid { gap: 2px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="quest-container">
+        <div class="quest-card">
+            <div class="progress-indicator">
+                <span>&#10003;</span> Puzzle 1 | <span>&#10003;</span> Puzzle 2 | <span>Puzzle 3 of 4</span>
+            </div>
+
+            <h1 class="quest-title">Pixel Heart</h1>
+            <p class="quest-description">Paint the hidden heart by clicking the right squares! Wrong clicks make squares disappear.</p>
+
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Correct</div>
+                    <div class="stat-value" id="correctCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Remaining</div>
+                    <div class="stat-value" id="remainCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Mistakes</div>
+                    <div class="stat-value" id="mistakeCount">0</div>
+                </div>
+            </div>
+
+            <div class="pixel-grid" id="pixelGrid"></div>
+
+            <div class="hint">
+                <strong>&#128161; Hint:</strong> Think of a heart shape! Click squares where the heart should be. Wrong clicks remove the square forever.
+            </div>
+
+            <div class="success-overlay" id="successOverlay">
+                <div class="success-content">
+                    <div class="success-text">Beautiful! ❤️</div>
+                    <div style="color: #e91e63; font-size: 1.2rem;">You painted my heart!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const HEART_PATTERN = [
+            [0,0,1,1,0,0,1,1,0,0],
+            [0,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,1,1,0,0],
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,0,0,1,1,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0]
+        ];
+
+        let correctCount = 0;
+        let mistakeCount = 0;
+        let totalHeartCells = 0;
+
+        function init() {
+            const grid = document.getElementById('pixelGrid');
+            
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    if (HEART_PATTERN[r][c] === 1) totalHeartCells++;
+                }
+            }
+            document.getElementById('remainCount').textContent = totalHeartCells;
+
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'pixel-cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', handleClick);
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function handleClick() {
+            if (this.classList.contains('painted') || this.classList.contains('wrong')) return;
+            
+            const r = parseInt(this.dataset.row);
+            const c = parseInt(this.dataset.col);
+            
+            if (HEART_PATTERN[r][c] === 1) {
+                this.classList.add('painted');
+                correctCount++;
+                document.getElementById('correctCount').textContent = correctCount;
+                document.getElementById('remainCount').textContent = totalHeartCells - correctCount;
+                
+                if (correctCount === totalHeartCells) {
+                    setTimeout(() => {
+                        const overlay = document.getElementById('successOverlay');
+                        if (overlay) overlay.classList.add('show');
+                        
+                        fetch('/quest/ascii', {
+                            method: 'POST'
+                        }).then(() => {
+                            setTimeout(() => {
+                                window.location.href = '/quest/api-connect';
+                            }, 2000);
+                        });
+                    }, 400);
+                }
+            } else {
+                this.classList.add('wrong');
+                mistakeCount++;
+                document.getElementById('mistakeCount').textContent = mistakeCount;
+            }
+        }
+
+        init();
+    </script>
+    <script th:inline="javascript">
+        const questProgress = {
+            journeyStarted: /*[[${questProgress.journeyStarted}]]*/ false,
+            bitwisePuzzleCompleted: /*[[${questProgress.bitwisePuzzleCompleted}]]*/ false,
+            base64PuzzleCompleted: /*[[${questProgress.base64PuzzleCompleted}]]*/ false,
+            asciiPuzzleCompleted: /*[[${questProgress.asciiPuzzleCompleted}]]*/ false,
+            apiPuzzleCompleted: /*[[${questProgress.apiPuzzleCompleted}]]*/ false
+        };
+    </script>
+    <script th:src="@{/js/heart-puzzle.js}"></script>
+</body>
+</html>

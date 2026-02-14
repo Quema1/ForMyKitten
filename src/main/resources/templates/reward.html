@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Reward - My Love</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="reward-container">
+        <h1 class="reward-title">You Did It, My Love! ❤️</h1>
+        <p class="reward-subtitle">Here's a special gallery just for us</p>
+
+        <div class="carousel-container">
+            <div class="carousel-wrapper">
+                <button class="carousel-btn prev" id="prevBtn" aria-label="Previous image">‹</button>
+                
+                <div class="carousel-slides" id="carouselSlides">
+                    <div class="slide active">
+                        <img th:src="@{/images/photo1.jpg}" alt="Memory 1">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo2.jpg}" alt="Memory 2">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo3.jpg}" alt="Memory 3">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo4.jpg}" alt="Memory 4">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo5.jpg}" alt="Memory 5">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo6.jpg}" alt="Memory 6">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo7.jpg}" alt="Memory 7">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo8.jpg}" alt="Memory 8">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo9.jpg}" alt="Memory 9">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo10.jpg}" alt="Memory 10">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo11.jpg}" alt="Memory 11">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo12.jpg}" alt="Memory 12">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo13.jpg}" alt="Memory 13">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo14.jpg}" alt="Memory 14">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo15.jpg}" alt="Memory 15">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo16.jpg}" alt="Memory 16">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo17.jpg}" alt="Memory 17">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo18.jpg}" alt="Memory 18">
+                    </div>
+                    <div class="slide video-slide">
+                        <video controls>
+                            <source th:src="@{/videos/video1.mp4}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo19.jpg}" alt="Memory 19">
+                    </div>
+                    <div class="slide">
+                        <img th:src="@{/images/photo20.jpg}" alt="Memory 20">
+                    </div>
+                </div>
+
+                <button class="carousel-btn next" id="nextBtn" aria-label="Next image">›</button>
+            </div>
+
+            <div class="carousel-dots" id="carouselDots"></div>
+        </div>
+
+        <div class="music-player">
+            <button class="music-btn" id="musicBtn">🎵 Play Our Song</button>
+            <audio id="backgroundMusic" loop>
+                <source th:src="@{/audio/background-music.mp3}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <p class="love-message">
+            Every moment with you is a treasure. Thank you for being my Valentine! 💕
+        </p>
+    </div>
+
+    <script th:src="@{/js/carousel.js}"></script>
+</body>
+</html>

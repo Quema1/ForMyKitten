@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Choice - My Love</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/hearts.css}">
+</head>
+<body>
+    <div id="hearts-container"></div>
+    
+    <div class="hero-section">
+        <h1 class="title">Will you be my Valentine?</h1>
+        <p class="subtitle">Choose your answer wisely...</p>
+        
+        <div class="buttons-container">
+            <button class="choice-btn" id="btn1">Yes!</button>
+            <button class="choice-btn" id="btn2">Definitely Yes!</button>
+            <button class="choice-btn" id="btn3">Of course!</button>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>I love you too, my love!</h2>
+            <p>Are you ready for our special journey?</p>
+            <form action="/start-journey" method="post">
+                <button type="submit" class="start-btn">Start our Journey</button>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/js/hearts.js}"></script>
+    <script>
+        const modal = document.getElementById('modal');
+        const buttons = document.querySelectorAll('.choice-btn');
+        
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('show');
+            });
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

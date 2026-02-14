@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game - Match the Pairs</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/heart-puzzle.css}">
+    <style>
+        .quest-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quest-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .quest-title {
+            color: #d63384;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .quest-description {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 2rem 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c2185b 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(214, 51, 132, 0.3);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .memory-card:hover:not(.flipped):not(.matched) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(214, 51, 132, 0.5);
+        }
+
+        .memory-card.flipped, .memory-card.matched {
+            background: white;
+            border: 3px solid #d63384;
+        }
+
+        .memory-card .card-back {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .memory-card .card-front {
+            display: none;
+        }
+
+        .memory-card.flipped .card-back, .memory-card.matched .card-back {
+            display: none;
+        }
+
+        .memory-card.flipped .card-front, .memory-card.matched .card-front {
+            display: block;
+        }
+
+        .memory-card.matched {
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #d63384;
+            font-weight: bold;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            border-left: 4px solid #2e7d32;
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .next-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c2185b 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4);
+            margin-top: 1rem;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(214, 51, 132, 0.6);
+        }
+
+        .hint {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #1976d2;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="quest-container">
+        <div class="quest-card">
+            <h1 class="quest-title">Memory Match</h1>
+            <p class="quest-description">Find all matching pairs to unlock the next challenge!</p>
+
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Moves</div>
+                    <div class="stat-value" id="moves">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Pairs Found</div>
+                    <div class="stat-value" id="pairs">0/6</div>
+                </div>
+            </div>
+
+            <div class="memory-grid" id="memoryGrid">
+            </div>
+
+            <div class="hint">
+                <strong>💡 Hint:</strong> Click cards to flip them. Find all matching pairs to proceed!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symbols = ['❤️', '💕', '💖', '💗', '💙', '💚'];
+        const cards = [...symbols, ...symbols];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let canFlip = true;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            const grid = document.getElementById('memoryGrid');
+            const shuffledCards = shuffle(cards);
+            
+            shuffledCards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.symbol = symbol;
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="card-back">?</div>
+                    <div class="card-front">${symbol}</div>
+                `;
+                card.addEventListener('click', flipCard);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (!canFlip || this.classList.contains('flipped') || this.classList.contains('matched')) {
+                return;
+            }
+
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                canFlip = false;
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const symbol1 = card1.dataset.symbol;
+            const symbol2 = card2.dataset.symbol;
+
+            if (symbol1 === symbol2) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('pairs').textContent = `${matchedPairs}/6`;
+                flippedCards = [];
+                canFlip = true;
+
+                if (matchedPairs === 6) {
+                    setTimeout(() => {
+                        fetch('/quest/bitwise', {
+                            method: 'POST'
+                        }).then(() => {
+                            setTimeout(() => {
+                                window.location.href = '/quest/base64';
+                            }, 1500);
+                        });
+                    }, 500);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+        }
+
+        initGame();
+    </script>
+    <script th:inline="javascript">
+        const questProgress = {
+            journeyStarted: /*[[${questProgress.journeyStarted}]]*/ false,
+            bitwisePuzzleCompleted: /*[[${questProgress.bitwisePuzzleCompleted}]]*/ false,
+            base64PuzzleCompleted: /*[[${questProgress.base64PuzzleCompleted}]]*/ false,
+            asciiPuzzleCompleted: /*[[${questProgress.asciiPuzzleCompleted}]]*/ false,
+            apiPuzzleCompleted: /*[[${questProgress.apiPuzzleCompleted}]]*/ false
+        };
+    </script>
+    <script th:src="@{/js/heart-puzzle.js}"></script>
+</body>
+</html>

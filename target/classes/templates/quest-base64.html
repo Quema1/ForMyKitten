@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Decoder - Developer's Heart</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/heart-puzzle.css}">
+    <style>
+        .quest-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quest-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .quest-title {
+            color: #d63384;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .quest-description {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .puzzle-display {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 2px solid #e9ecef;
+            position: relative;
+        }
+
+        .encoded-message {
+            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            color: #c2185b;
+            text-align: center;
+            word-break: break-all;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .puzzle-label {
+            font-size: 0.9rem;
+            color: #888;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #d63384;
+            box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c2185b 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(214, 51, 132, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: #fff3f3;
+            color: #d32f2f;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #d32f2f;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .hint {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #1976d2;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-indicator span {
+            color: #4caf50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="quest-container">
+        <div class="quest-card">
+            <div class="progress-indicator">
+                <span>&#10003;</span> Puzzle 1 | <span>Puzzle 2 of 4</span>
+            </div>
+
+            <h1 class="quest-title">Binary Decoder</h1>
+            <p class="quest-description">Convert this binary code to text to unlock the next challenge!</p>
+
+            <div class="puzzle-display">
+                <div class="puzzle-label">Binary Code:</div>
+                <div class="encoded-message" th:text="${binaryMessage}" style="font-family: 'Courier New', monospace; font-size: 1.1rem; line-height: 1.8; word-break: keep-all; white-space: pre-wrap;">
+                    01001001 00100000 01101100 01101111 01110110 01100101 00100000 01111001 01101111 01110101
+                </div>
+                <p style="font-size: 0.9rem; color: #888; margin-top: 0.5rem;">Each group of 8 digits represents one character</p>
+            </div>
+
+            <div class="error-message" th:if="${error}" th:text="${error}">
+                Incorrect answer! Try again.
+            </div>
+
+            <form method="post" th:action="@{/quest/base64}" id="base64Form">
+                <div class="form-group">
+                    <label for="answer" class="form-label">Decoded Text:</label>
+                    <input type="text" id="answer" name="answer" class="form-input" 
+                           placeholder="Enter the decoded text..." required autofocus>
+                </div>
+
+                <button type="submit" class="submit-btn">Submit Answer</button>
+            </form>
+
+            <div class="hint">
+                <strong>💡 Hint:</strong> Binary to text conversion - each 8-bit sequence (byte) represents an ASCII character. 
+                You can use an online binary-to-text converter or convert manually!
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/quest.js}"></script>
+    <script th:inline="javascript">
+        const questProgress = {
+            journeyStarted: /*[[${questProgress.journeyStarted}]]*/ false,
+            bitwisePuzzleCompleted: /*[[${questProgress.bitwisePuzzleCompleted}]]*/ false,
+            base64PuzzleCompleted: /*[[${questProgress.base64PuzzleCompleted}]]*/ false,
+            asciiPuzzleCompleted: /*[[${questProgress.asciiPuzzleCompleted}]]*/ false,
+            apiPuzzleCompleted: /*[[${questProgress.apiPuzzleCompleted}]]*/ false
+        };
+    </script>
+    <script th:src="@{/js/heart-puzzle.js}"></script>
+</body>
+</html>
